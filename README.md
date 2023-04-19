@@ -1,2 +1,2 @@
-# Worksamples
-Data Visualization Work Samples by Eva-Maria Haimerl
+# Data Viz Worksamples
+Data Visualization Worksamples by Eva-Maria Haimerl
