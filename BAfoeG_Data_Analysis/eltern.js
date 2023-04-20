@@ -137,7 +137,7 @@ d3.csv("elternData.csv")
             .text("Mütter");
 
         //add piechart
-        const pieData = [178_361, 444_642]; //Source: https://www.govdata.de/web/guest/daten/-/details/bafog-geforderte-nach-wohnung-wahrend-der-ausbildung-umfang-der-forderung-bedarfssatzgruppen-un
+        const pieData = [178_361, 444_642]; //zu Hause: 178_361, nicht zu Hause: 444_642; Source: https://www.govdata.de/web/guest/daten/-/details/bafog-geforderte-nach-wohnung-wahrend-der-ausbildung-umfang-der-forderung-bedarfssatzgruppen-un
         const sum = 178_36 + 444_642;
 
         const colorScale = d3.scaleOrdinal()
@@ -154,7 +154,8 @@ d3.csv("elternData.csv")
             .attr("d", d3.arc().innerRadius(0).outerRadius(width / 20))
             .attr("fill", d => {
                 return colorScale(d.index)
-            });
+            })
+            .append("title").text((d) => d.value.toLocaleString())
 
 
         //Add annotation 
@@ -162,11 +163,31 @@ d3.csv("elternData.csv")
             .attr("transform", `translate(${gap} ${height - 30} )`)
             .text("Unter 30% der Geförderten wohnten 2021 im Haushalt der Eltern");
 
+        svg.append("text")
+            .attr("transform", `translate(${580} ${height - 120} )`)
+            .text("Wohnsituation Geförderter");
+        svg.append("text")
+            .attr("transform", `translate(${600} ${height - 100} )`)
+            .text("leben zu Hause");
+        svg.append("text")
+            .attr("transform", `translate(${600} ${height - 80} )`)
+            .text("leben nicht zu Hause");
+        svg.append("circle")
+            .attr("transform", `translate(${590} ${height - 107} )`)
+            .attr("r", 7)
+            .attr("fill", "#ffcc66");
+        svg.append("circle")
+            .attr("transform", `translate(${590} ${height - 87} )`)
+            .attr("r", 7)
+            .attr("fill", "#996600");
+
         graphics.append("line")
             .attr("x1", xVerticalLine - 150)
             .attr("x2", xVerticalLine - width / 20)
             .attr("y1", height - gap)
             .attr("y2", yVerticalLine)
             .attr("stroke", "black")
+
+
 
     })

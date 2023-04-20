@@ -4,39 +4,105 @@
 <head>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="./eltern.js"></script>
+
 </head>
 
 <body>
-    <div id="gefoerderte">
-        <h1>Entwicklung der Anzahl Geförderter verschiedener Ausbildungsstufen</h1>
-        <iframe title="Entwicklung der Anzahl Geförderter" aria-label="Stacked Column Chart"
-            id="datawrapper-chart-i1vHO" src="https://datawrapper.dwcdn.net/i1vHO/1/" scrolling="no" frameborder="0"
-            style="width: 0; min-width: 100% !important; border: none;" height="500" data-external="1"></iframe>
-        <script type="text/javascript">!function () { "use strict"; window.addEventListener("message", (function (a) { if (void 0 !== a.data["datawrapper-height"]) { var e = document.querySelectorAll("iframe"); for (var t in a.data["datawrapper-height"]) for (var r = 0; r < e.length; r++)if (e[r].contentWindow === a.source) { var i = a.data["datawrapper-height"][t] + "px"; e[r].style.height = i } } })) }();
-        </script>
-    </div>
+    <h1>BAföG visualisiert</h1>
+    <h2>Entwurf einer Datenanalyse</h2>
+    <p>
+        BAföG revolutionierte vor über 50 Jahren die deutsche Bildungslandschaft und brachte vielen Geförderten
+        finanzielle Sicherheit und damit Freiheit und Selbstbestimmtheit über die eigene Ausbildung. Studierende, aber
+        auch Auszubildende und Schüler:innen haben seitdem die Möglichkeit, eine Förderung zu beantragen. Die Förderung
+        ist leistungsunabhängig, also ist nicht an gute Noten gekoppelt.
+
+        Vielfach wurde das BAföG reformiert, vor allem nach der Jahrtausendwende. Vom Bundesministerium für Bildung und
+        Forschung sowie vom Statistischen Bundesamt veröffentlichte Daten geben Einblick in die Entwicklung der
+        Förderung seit 2000 und in die Lebenssituation aktuell Geförderter.
+    </p>
+
     <div id="wohnsituation">
-        <h1>Berufliche Stellung der Eltern von Geförderten</h1>
+        <h2>Wie ist die familiäre Situation der Geförderten?</h2>
+        <p>
+            Ein wichtiger Faktor für die Höhe der BAföG-Auszahlung ist das Einkommen der Eltern. Je nachdem ob die
+            Eltern verheiratet sind oder nicht liegt der Freibetrag zwischen 1.600 und 2.400 Euro im Monat. Wenn mehr
+            verdient wird, sinkt der ausgezahlte BAföG-Satz. Hintergrund dieser Gesetzgebung ist das Anliegen, Kinder
+            von Nicht-Akademiker:innen eine Ausbildung zu ermöglichen. Dennoch ist der Anteil von Studierenden, deren
+            Eltern studiert haben, noch immer gut dreieinhalbmal höher. Daher wird Kritik an der Höhe der aktuellen
+            Freibeträge laut. Etwa x% der Eltern von Geförderten sind berufstätig, die größten Anteile machen dabei die
+            Berufsgruppen der Arbeiter:innen und Angestellten aus. Unter den Müttern Geförderter sind x% in einem
+            Angestelltenverhältnis beschäftigt.
+            Zudem ist relevant, ob Geförderte im Haushalt ihrer Eltern Leben oder nicht. Für Schüler:innen ist es sogar
+            Voraussetzung, dass sie nicht bei ihren Eltern leben, etwa weil der gewählte Ausbildungsweg am Wohnort nicht
+            möglich ist. Auch insgesamt wohnt weniger als ein Drittel der Geförderten im Haushalt der Eltern wohnen.
+
+        </p>
+        <h2>Berufsstand der Elternteile Geförderter 2021</h2>
+        <p>Beim Hovern über die Balken wird die Anzahl der Personen angezeigt.</p>
         <svg></svg>
         <p>Quelle: <a
                 href="https://www.govdata.de/web/guest/daten/-/details/bafog-geforderte-nach-wohnung-wahrend-der-ausbildung-umfang-der-forderung-bedarfssatzgruppen-un">
                 Bundesministerium für Bildung und Forschung</a>
         </p>
     </div>
-    <div id="foerderungsbetrag">
-        <iframe title="" aria-label="Interactive line chart" id="datawrapper-chart-pn4jn"
-            src="https://datawrapper.dwcdn.net/pn4jn/1/" scrolling="no" frameborder="0"
-            style="width: 0; min-width: 100% !important; border: none;" height="520" data-external="1"></iframe>
+
+    <div id="gefoerderte">
+        <h2>Wie hat sich die Anzahl der Geförderten in den Ausbildungsstätten entwickelt?</h2>
+        <p>
+            Bis 2012 stieg die Anzahl Geförderter auf über 979.000 Personen. Seitdem stagniert die Menge Geförderter und
+            ist 2021 fast auf dem Level von 2000 zurück. Der Rückgang Geförderter zieht sich durch alle Schularten. Das
+            verwundert vor allem angesichts konstant steigender Studierendenzahlen. Gründe dafür könnten große
+            bürokratische Hürden bei der Antragstellung sowie die Angst vor Verschuldung sein. Außerdem sind viele
+            Berechtigte schlicht nicht genug informiert, ob sie für eine Förderung infrage kämen. Bemerkenswert ist auch
+            der Rückgang der Geförderten im Bereich der Erwachsenenbildung außerhalb des Hochschulbetriebs in
+            Abendschulen, Berufsaufbauschulen, Fachoberschulklassen, Kollegen oder Fachschulklassen. 2012 machten diese
+            Geförderten einen Anteil von etwa 12 % aus. Mittlerweile hat sich dieser Anteil halbiert.
+        </p>
+        <iframe title="Entwicklung der Anzahl Geförderter" aria-label="Stacked Column Chart"
+            id="datawrapper-chart-i1vHO" src="https://datawrapper.dwcdn.net/i1vHO/4/" scrolling="no" frameborder="0"
+            style="width: 0; min-width: 80% !important; border: none;" height="500" data-external="1"></iframe>
         <script type="text/javascript">!function () { "use strict"; window.addEventListener("message", (function (a) { if (void 0 !== a.data["datawrapper-height"]) { var e = document.querySelectorAll("iframe"); for (var t in a.data["datawrapper-height"]) for (var r = 0; r < e.length; r++)if (e[r].contentWindow === a.source) { var i = a.data["datawrapper-height"][t] + "px"; e[r].style.height = i } } })) }();
         </script>
+    </div>
+    <div id="foerderungsbetrag">
+        <h2>Wie haben sich die ausgezahlten BAföG-Beträge verändert?</h2>
+        <p>
+            An sinkenden Förderbeträgen kann das nicht liegen, denn diese haben sich seit 2000 für alle
+            Ausbildungsstätten verdoppelt. Die Bundesregierung ist verpflichtet, alle zwei Jahre die BAföG-Bedarfssätze
+            zu überprüfen und sie gegebenenfalls an veränderte Lebenshaltungskosten und Einkommensverhältnisse
+            anzupassen. Anfang der 2000er herrscht allerdings lange Stillstand bis 2008 eine Erhöhung der Bedarfssätze
+            um 10% erfolgt. Auch die folgenden BAföG-Änderungsgesetze 2010, 2011, 2014 und 2019 bringen Erhöhungen mit
+            sich. Die Anpassung im Juli 2022 sieht eine Erhöhung der Bedarfssätze um 5,75% vor. Die Inflation kann dies
+            allerdings nicht ausreichend ausgleichen kann. Hierfür wäre eine Anhebung von mindestens 10% nötig.
+        </p>
+        <iframe title="Durchschnittlicher monatlicher BAföG-Betrag von 2000 bis 2012"
+            aria-label="Interactive line chart" id="datawrapper-chart-N0H0h"
+            src="https://datawrapper.dwcdn.net/N0H0h/5/" scrolling="no" frameborder="0"
+            style="width: 0; min-width: 80% !important; border: none;" height="520" data-external="1"></iframe>
+        <script
+            type="text/javascript">!function () { "use strict"; window.addEventListener("message", (function (a) { if (void 0 !== a.data["datawrapper-height"]) { var e = document.querySelectorAll("iframe"); for (var t in a.data["datawrapper-height"]) for (var r = 0; r < e.length; r++)if (e[r].contentWindow === a.source) { var i = a.data["datawrapper-height"][t] + "px"; e[r].style.height = i } } })) }();</script>
     </div>
     <div id="bundeslaender">
-        <iframe title="BAföG nach Bundesländern" aria-label="Map" id="datawrapper-chart-Pv4Xw"
-            src="https://datawrapper.dwcdn.net/Pv4Xw/1/" scrolling="no" frameborder="0"
-            style="width: 0; min-width: 100% !important; border: none;" height="792" data-external="1"></iframe>
+        <h2>Wird überall in Deutschland gleich viel BAföG ausgezahlt?</h2>
+        <p>
+            Seit 2015 trägt die Kosten für die BAföG-Förderung allein der Bund. Nur die Verwaltungskosten, etwa für die
+            Beantragung von Anträgen, tragen die Länder jeweils selbst. Auch die Bedarfssätze und Freibeträge sind
+            bundesweit gültig und unter anderem vom eigenen Vermögen der Geförderten und dem Einkommen der Eltern
+            abhängig. Da Bundesgesetz gilt, sind die Sätze für alle Länder gleich. Dennoch gibt es große Unterschiede
+            bei der Höhe ausgezahlter Förderungsbeträge innerhalb der Bundesländer. So betrug 2021 der durchschnittliche
+            monatliche Betrag in Hamburg 601€, 46€ über dem Bundesdurchschnitt, während in Thüringen im Durchschnitt nur
+            527€ ausgezahlt wurden, also 28€ weniger. Diese Zahlen sind natürlich stark von den finanziellen Situationen
+            der Antragstellenden abhängig. Dennoch ist es interessant, dass Hamburg als Stadt mit hohen
+            Lebenshaltungskosten zugleich am meisten fördert.
+        </p>
+        <iframe title="Durchschnittlicher Monatsbetrag 2021  nach Bundesländern" aria-label="Map"
+            id="datawrapper-chart-Pv4Xw" src="https://datawrapper.dwcdn.net/Pv4Xw/2/" scrolling="no" frameborder="0"
+            style="width: 0; min-width: 80% !important; border: none;" height="792" data-external="1"></iframe>
         <script type="text/javascript">!function () { "use strict"; window.addEventListener("message", (function (a) { if (void 0 !== a.data["datawrapper-height"]) { var e = document.querySelectorAll("iframe"); for (var t in a.data["datawrapper-height"]) for (var r = 0; r < e.length; r++)if (e[r].contentWindow === a.source) { var i = a.data["datawrapper-height"][t] + "px"; e[r].style.height = i } } })) }();
         </script>
     </div>
+
+
 
 
 
@@ -45,12 +111,40 @@
 
 <style>
     body {
-        background-color: #181818;
-        color: white;
+        background-color: snow;
+        color: #181818;
+        font-family: Tahoma, sans-serif;
+        padding-left: 300px;
+        padding-top: 80px;
+        padding-right: 80px;
+        line-height: 200%;
+    }
+
+
+
+    @media screen and (prefers-color-scheme: dark) {
+        body {
+            background-color: #181818;
+            color: snow;
+        }
+    }
+
+    p,
+    h1 {
+
+        min-width: 50%;
+        max-width: 70%;
+        padding-bottom: 30px;
+        text-align: justify;
+
+    }
+
+    div {
+        padding-top: 50px;
     }
 
     svg {
-        font-family: Tahoma, sans-serif;
+        background-color: snow;
     }
 </style>
 
