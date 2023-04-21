@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Clonal Colony Optimization</title>
+    <style>
+        body {
+            margin: 30px;
+            font-family: Arial;
+        }
+
+        svg {
+            
+            border: 1px solid black;
+            margin-bottom: 20px;
+        }
+
+        #resultList {
+            padding: 40px;
+            padding-left: 40 px;
+            margin-left: 50 px;
+            
+        }
+
+        div {
+            margin: 30 px;
+        }
+
+        #resultListRobustness {
+            background-color: red;
+        }
+
+        #resultListFitness {
+            background-color: yellow;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 50% 50%;
+            padding: 10 px;
+            gap: 50 px;
+        }
+
+        .grid-item {
+            padding: 20 px;
+            text-align: center;
+        }
+
+    </style>
+    <script src="https://d3js.org/d3.v5.js"></script>
+</head>
+
+<body>
+    <h1>Visualized optimization algorithm inspired by plant growth</h1>
+    <div class="grid-container">
+        <svg class="grid-item"></svg>
+        <div class="grid-item">
+            <button type="button" id="btn">Start growing plants!</button>
+            <button type="button" id="btnResults" disabled>Show best solutions</button>
+            <button type="button" id="btnReset" disabled>Reset</button>
+            <div id="info">Click to perform run! Amount of plant generations: 100 <br>
+                Alive plants are marked as <span style="color:green">green </span> dots.
+                Purged plants are colored in <span style="color:brown">darkbrown </span>.<br>
+                Hover over origin plants to identify colonies by ID (a,b,c ...)
+            </div>
+            <div class="grid-container" id="resultArea">
+                <div id="resultListFitness" class="grid-item"></div>
+                <div id="resultListRobustness" class="grid-item"></div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+
+
+
+</body>
+
+<script>
+
+    const worldWidth = 600;
+    const worldHeight = 600;
+    const animationSpeed = 800;
+
+    const carryingCapacity = 10;
+    const generations = 100;
+    const delta = 0.07;
+
+
+
+    //build landscape
+    const landscape = d3.select("svg")
+        .attr("width", worldWidth)
+        .attr("height", worldHeight);
+
+    //scales for landscape
+    const xLandscape = d3.scaleLinear()
+        .domain([0, 6])
+        .range([0, worldWidth]);
+
+    const yLandscape = d3.scaleLinear()
+        .domain([0, 6])
+        .range([0, worldHeight]);
+
+    const michalewiczColor = d3.scaleSequential()
+        .domain([-2, 2])
+        .interpolator(d3.interpolateInferno);
+
+    const xMichScale = d3.scaleLinear()
+        .domain([0, 60])
+        .range([0, 6]);
+
+    const yMichScale = d3.scaleLinear()
+        .domain([0, 60])
+        .range([0, 6]);
+
+
+    //implemented color encoded squares to show optima and minima on surface
+    let surface = []
+    for (let i = 0; i < worldWidth / 10; i++) {
+        for (let j = 0; j < worldHeight / 10; j++) {
+            surface.push({
+                x: i,
+                y: j,
+                michalewicz: michalewicz(xMichScale(i), yMichScale(j))
+            })
+
+        }
+    }
+    
+    landscape.append("g")
+        .attr("id", "surface")
+        .selectAll("rect")
+        .data(surface)
+        .enter()
+        .append("rect")
+        .attr("x", d => d.x * 10)
+        .attr("y", d => d.y * 10)
+        .attr("width", 10)
+        .attr("height", 10)
+        .attr("fill", d => michalewiczColor(d.michalewicz))
+        .attr("opacity", 0.65);
+
+    //add button functionality
+    const btn = document.querySelector("#btn");
+    btn.addEventListener("click", startRun);
+
+    const btnResults = document.querySelector("#btnResults");
+    btnResults.addEventListener("click", distill);
+
+    const btnReset = document.querySelector("#btnReset");
+    btnReset.addEventListener("click", reset);
+
+
+    /*---------------------fitness function---------------------*/
+    function michalewicz(x, y) {
+
+        return - (
+            Math.sin(x) * Math.pow(Math.sin(Math.pow(x, 2) / Math.PI), 20)
+            +
+            Math.sin(y) * Math.pow(Math.sin((2 * Math.pow(y, 2)) / Math.PI), 20)
+        )
+    }
+
+
+
+
+
+    /*--------------------implementing growing----------------------*/
+
+    
+    let colonies = [];
+    let generation = 1;
+
+    function startRun() {
+        //IDs for colonies
+        let arr = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
+
+        //seed random colonies
+        for (let i = 0; i < carryingCapacity; i++) {
+            let x = Math.random() * 6;
+            let y = Math.random() * 6;
+
+            let centralPlant = {
+                x: x,
+                y: y,
+                fitness: michalewicz(x, y),
+                children: [],
+                generation: 0
+            }
+
+            let plants = [];
+            plants.push(centralPlant);
+
+            colonies.push({
+                centralPlant: centralPlant,
+                fittestPlant: centralPlant,
+                plants: plants,
+                avgFitness: michalewicz(x, y),
+                colonyID: arr[i]
+            })
+        }
+        
+
+
+        //visualize central plants of colonies
+        landscape.append("g")
+            .attr("id","greenery");
+
+        const greenery = d3.select("#greenery");
+        greenery.append("g")
+            .attr("id", "plants")
+            .selectAll("circle")
+            .data(colonies)
+            .enter()
+            .append("circle")
+            .attr("cx", d => xLandscape(d.centralPlant.x))
+            .attr("cy", d => yLandscape(d.centralPlant.y))
+            .attr("r", 6)
+            .attr("fill", "darkgreen")
+            .attr("id", d => d.colonyID)
+            .append("title")
+            .text(d => d.colonyID);
+
+
+        //perform multiples iterations with delay to make visible in animation
+        for (let count = 0; count < generations; count++) {
+            setTimeout(startIndivRun, animationSpeed);
+            generation++;
+        }
+
+
+        document.querySelector("#btnResults").disabled = false;
+        document.querySelector("#btn").disabled = true;
+
+    }
+
+    function startIndivRun() {
+
+        let newChildren = [];
+        let newLinks = [];
+        let plantsToPurge = [];
+        colonies.forEach(colony => {
+
+            //purge: find plant to kill in each colony: least fit
+
+            //we don't want to immediately purge after putting two plants: wait a few generations
+            if (colony.plants.length > 4) {
+
+                let leastFitness = colony.centralPlant.fitness;
+                let leastFitPlantIndex = 0;
+
+                for (let i = 0; i < colony.plants.length; i++) {
+
+                    //if plant is not fit and old enough: save index
+                    if (colony.plants[i].fitness < leastFitness &&
+                        colony.plants[i].generation <= generation - 4) {
+                        leastFitPlantIndex = i;
+                    }
+                }
+
+                colony.plants.splice(leastFitPlantIndex, 1);
+                plantsToPurge.push(colony.plants[leastFitPlantIndex]);
+
+            }
+
+
+            
+            //mark purged plants
+            const greenery = d3.select("#greenery");
+            greenery.append("g")
+                .attr("class", "deadPlants")
+                .selectAll("circle")
+                .data(plantsToPurge)
+                .enter()
+                .append("circle")
+                .attr("cx", d => xLandscape(d.x))
+                .attr("cy", d => yLandscape(d.y))
+                .attr("r", 2)
+                .attr("fill", "#663300")
+                .attr("opacity", 1);
+
+
+
+            //extend: produce offspring on the fittest plant
+            let fittest = colony.fittestPlant;
+
+
+            //find distance randomly 
+            let childX = fittest.x + delta * (Math.random() * 13 - 6);
+            let childY = fittest.y + delta * (Math.random() * 13 - 6);
+
+            //prevent colonies from growing out of the landscape
+            if (childX > 6) {
+                childX = 6;
+            }
+            if (childX < 0) {
+                childX = 0;
+            }
+
+            if (childY > 6) {
+                childY = 6;
+            }
+            if (childY < 0) {
+                childY = 0;
+            }
+
+            //compute transported fitness for the new child
+            let fitness = michalewicz(childX, childY);
+            let transportedFitness = fitness - 0.3 * (fitness- colony.avgFitness);
+
+            let child = {
+                x: childX,
+                y: childY,
+                fitness: transportedFitness,
+                children: [],
+                generation: generation
+            }
+            
+           
+
+            //add new child 
+            newChildren.push(child);
+            fittest.children.push(child);
+            colony.plants.push(child);
+
+            //replace fittest plant if necessary
+            if (child.fitness < colony.fittestPlant.fitness) {
+                colony.fittestPlant = child;
+            }
+
+
+            //calculate distance to new plant
+            let distance = Math.sqrt(
+                Math.pow(fittest.x - childX, 2)
+                +
+                Math.pow(fittest.y - childY, 2)
+            );
+
+            //create the links
+            newLinks.push({
+                x1: fittest.x,
+                y1: fittest.y,
+                x2: childX,
+                y2: childY,
+                distance: distance
+            });
+
+            //compute new average fitness
+            let sum = 0;
+            colony.plants.forEach(plant => {
+                sum += plant.fitness;
+            })
+            colony.avgFitness = sum / colony.plants.length;
+
+        });
+        
+        //add new plants to visualization
+        const greenery = d3.select("#greenery");
+        greenery.append("g")
+            .attr("class", "children")
+            .selectAll("circle")
+            .data(newChildren)
+            .enter()
+            .append("circle")
+            .attr("cx", d => xLandscape(d.x))
+            .attr("cy", d => yLandscape(d.y))
+            .attr("r", 2)
+            .attr("fill", "green");
+
+        greenery.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(newLinks)
+            .enter()
+            .append("line")
+            .attr("stroke", "green")
+            .attr("stroke-width", 1)
+            .attr("opacity", 0.5)
+            .attr("x1", d => xLandscape(d.x1))
+            .attr("y1", d => yLandscape(d.y1))
+            .attr("x2", d => xLandscape(d.x2))
+            .attr("y2", d => yLandscape(d.y2))
+
+
+        //splitting is not implemented as colonies do not grow exessively due to purging every generation. 
+        //So splitting did not seem necessary to me for this small example.
+        
+
+    }
+
+    function distill() {
+        //distill best solutions
+        colonies.forEach(colony => {
+
+            let plants = colony.plants;
+
+            //approximate taken area by circle with radius = largestDistance
+            let largestDistance = 0;
+
+            plants.forEach(plantOuter => {
+                plants.forEach(plantInner => {
+                    let distance = Math.sqrt(
+                        Math.pow(plantOuter.x - plantInner.x, 2)
+                        +
+                        Math.pow(plantOuter.y - plantInner.y, 2)
+                    );
+
+                    if (distance > largestDistance) {
+                        largestDistance = distance;
+                    }
+
+                })
+            })
+            
+
+            let Ac = Math.PI * Math.pow(largestDistance / 2, 2);
+
+
+            //calculate variance 
+            let sum = 0;
+            plants.forEach(plant => {
+                sum += plant.fitness;
+            })
+            let mean = sum / plants.length;
+
+
+            let over = 0;
+            plants.forEach(plant => {
+                over += Math.pow(plant.fitness - mean, 2)
+            })
+            let variance = over / (plants.length - 1);
+
+
+            let score = Ac / variance;
+
+
+            //save values for colony
+            colony.score = score;
+            colony.area = Ac;
+            colony.variance = variance;
+
+        })
+        
+
+
+
+        //show most robust colonies
+        d3.select("#resultListRobustness").append("div")
+            .text("Top 3 robust colonies:");
+
+        sortedColonies = colonies.sort(function (a, b) { return a.score - b.score });
+        let top3 = sortedColonies.slice(0, 3);
+        
+
+        top3.forEach(colony => {
+
+            d3.select("#resultListRobustness").append("div")
+                .text("colony ID: " + colony.colonyID
+                    + " area: " + colony.area.toFixed(4)
+                    + ", variance: " + colony.variance.toFixed(4)
+                    + ", robustness score: " + colony.score.toFixed(4)
+                );
+
+            for (index = 0; index < colony.plants.length; index++) {
+                d3.select("#resultListRobustness").append("div")
+                    .text("x1: " + colony.plants[index].x.toFixed(2) +
+                        "  x2: " + colony.plants[index].y.toFixed(2));
+            }
+
+
+            
+            //mark most robust solutions
+            const greenery = d3.select("#greenery");
+            greenery.append("g")
+                .attr("class", "topColonies")
+                .selectAll("circle")
+                .data(colony.plants)
+                .enter()
+                .append("circle")
+                .attr("cx", d => xLandscape(d.x))
+                .attr("cy", d => yLandscape(d.y))
+                .attr("r", 5)
+                .attr("fill", "red");
+
+        })
+
+    
+        //show most fit colonies
+        d3.select("#resultListFitness").append("div")
+            .text("Top 3 fit colonies:");
+
+        sortedColoniesByFitness = colonies.sort(function (a, b) { return a.avgFitness - b.avgFitness });
+        let top3Fit = sortedColoniesByFitness.slice(0, 3);
+        
+
+        top3Fit.forEach(colony => {
+
+            d3.select("#resultListFitness").append("div")
+                .text("colony ID: " + colony.colonyID
+                    + " avg fitness: " + colony.avgFitness.toFixed(4)
+                );
+
+            for (index = 0; index < colony.plants.length; index++) {
+                d3.select("#resultListFitness").append("div")
+                    .text("x1: " + colony.plants[index].x.toFixed(2) +
+                        "  x2: " + colony.plants[index].y.toFixed(2));
+            }
+
+            
+            //mark fittest solutions
+            const greenery = d3.select("#greenery");
+            greenery.append("g")
+                .attr("class", "topColonies")
+                .selectAll("circle")
+                .data(colony.plants)
+                .enter()
+                .append("circle")
+                .attr("cx", d => xLandscape(d.x))
+                .attr("cy", d => yLandscape(d.y))
+                .attr("r", 3)
+                .attr("fill", "yellow");
+
+        })
+
+        
+
+
+
+        document.querySelector("#btnResults").disabled = true;
+        document.querySelector("#btnReset").disabled = false;
+
+
+    }
+
+    function reset() {
+        colonies = [];
+        generation = 1;
+
+        document.querySelector("#greenery").innerHTML = "";
+        document.querySelector("#resultListRobustness").innerHTML = "";
+        document.querySelector("#resultListFitness").innerHTML = "";
+
+        document.querySelector("#btn").disabled = false;
+        document.querySelector("#btnReset").disabled = true;
+
+        
+    }
+
+</script>
+
+</html>

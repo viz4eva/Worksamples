@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Ant Colony System</title>
+    <style>
+        body {
+            margin: 50px;
+            font-family: Arial;
+        }
+
+        svg {
+            float: left;
+            border: 1px solid black;
+            margin-right: 20px;
+        }
+
+       
+    </style>
+    <script src="https://d3js.org/d3.v5.js"></script>
+</head>
+
+<body>
+    <h1>Ant Colony Algorithm solving the Traveling Salesman Problem</h1>
+    <div id="test"></div>
+    <svg></svg>
+    <button type="button" id="btn">Start run!</button>
+    <div id="info">Perform run to see info about best path.
+    <div>  Paths that are currently taken by an ant are marked in <span style="color: green;">green</span>,
+        paths where pheromone is put are marked in <span style="color: hotpink;">pink</span> and current best path is
+        shown in <span style="color: orange;">orange</span>. Algorithm can be run several times to achieve a better result</div>
+    </div>
+
+</body>
+
+<script>
+    const cityFile = "citiesBay29.txt";
+    const edgeFile = "edgesBay29.txt";
+
+    const worldWidth = 800;
+    const worldHeight = 600;
+    const animationSpeed = 100;
+
+    const antsPerWave = 10;
+    const wavesAmount = 200;
+    const decayCoeff = 0.5;
+
+    //read city file and store as nodes
+    fetch(cityFile)
+        .then(responseText => responseText.text())
+        .then(text => {
+
+            const cities = text.split("\r\n");
+            citiesClean = [];
+            cities.forEach(city => {
+                citiesClean.push(city.replace(/\s+/g, " ").replace(" ", "").split(" "));
+            });
+            
+
+            nodes = [];
+            citiesClean.forEach(city => {
+                nodes.push({
+                    id: city[0],
+                    x: city[1],
+                    y: city[2]
+                })
+            })
+            
+
+            //read weight file and store as paths
+            fetch(edgeFile)
+                .then(responseMatrix => responseMatrix.text())
+                .then(text => {
+                    const paths = text.split("\r\n");
+                    pathsClean = [];
+                    paths.forEach(path => {
+                        pathsClean.push(path.replace(/\s+/g, " ").replace(" ", "").split(" "))
+                    })
+                
+
+                    edges = [];
+                    for (let i = 0; i < citiesClean.length; i++) {
+                        for (let j = 0; j < citiesClean.length; j++) {
+                            edges.push({
+                                source: i,
+                                target: j,
+                                weight: pathsClean[i][j],
+                                pheromone: 0,
+                                id: "edge" + i + "-" + j
+                            })
+                        }
+                    }
+                    
+
+                    //build landscape
+                    const landscape = d3.select("svg")
+                        .attr("width", worldWidth)
+                        .attr("height", worldHeight);
+
+                    //scales for city landscape
+                    const xLandscape = d3.scaleLinear()
+                        .domain([40, 2500]) 
+                        .range([100, worldWidth - 25]);
+
+                    const yLandscape = d3.scaleLinear()
+                        .domain([40, 2500]) 
+                        .range([25, worldHeight - 25]);
+
+
+
+                    landscape.selectAll("line")
+                        .data(edges)
+                        .enter()
+                        .append("line")
+                        .attr("stroke", "#EEEEEE")
+                        .attr("stroke-width", 1)
+                        .attr("opacity", 0.5)
+                        .attr("x1", d => xLandscape(nodes[d.source].x))
+                        .attr("y1", d => yLandscape(nodes[d.source].y))
+                        .attr("x2", d => xLandscape(nodes[d.target].x))
+                        .attr("y2", d => yLandscape(nodes[d.target].y))
+                        .attr("id", function (d) {
+                            let source = parseInt(d.source);
+                            let target = parseInt(d.target);
+                            return "edge" + parseInt(source + 1) + "-" + parseInt(target + 1);
+                        });
+
+                    landscape.selectAll("circle")
+                        .data(nodes)
+                        .enter()
+                        .append("circle")
+                        .attr("cx", d => xLandscape(d.x))
+                        .attr("cy", d => yLandscape(d.y))
+                        .attr("r", 5)
+                        .attr("fill", "red")
+                        .attr("id", d => "city" + d.id)
+                        .append("title")
+                        .text(d => d.id);
+
+                    //implement Run
+                    const btn = document.querySelector("#btn");
+                    btn.addEventListener("click", startRun);
+
+                    /*---------------------helper functions---------------------*/
+
+                    //compute total distances for complete paths
+                    function computeTotalDistance(solution) {
+                        let distance = 0;
+                        solution.forEach(city => {
+                            distance += parseInt(city.localDistance);
+                        });
+                        return distance;
+                    }
+
+                    //select next city
+                    function selectCity(visited, currentCity) {
+                        let probs = [];
+                        let startIndex = currentCity * nodes.length;
+
+                        let sumProb = 0;
+                        for (let i = 0; i < visited.length; i++) {
+                            if (visited[i]) {
+                                
+                                sumProb += 0;
+                            }
+                            else {
+                                let current = startIndex + i;
+
+                                let edge = edges[current];
+                            
+
+                                let prob = (edge.pheromone * Math.pow(1 / edge.weight, 5));
+                                
+
+                                sumProb += prob;
+                            }
+
+                        }
+
+
+
+                        //compute probabilities to visit remaining cities
+                        for (let i = 0; i < visited.length; i++) {
+                            if (visited[i]) {
+                                probs.push(0);
+                            }
+                            else {
+                                let edge = edges[currentCity * nodes.length + i];
+
+
+                                let prob = (edge.pheromone * Math.pow(1 / edge.weight, 5)) / sumProb;
+
+                                probs.push(prob);
+                            }
+                        }
+                        
+
+                        ////select the next city based on computed probabilities
+                        let sum = 0;
+                        let ar = [];
+                        for (i = 0; i < probs.length - 1; i++) {
+                            sum += (probs[i] / 100.0);
+                            ar[i] = sum;
+                        }
+                        
+
+                        while (true) {
+                            let r = Math.random();
+                            
+                            for (i = 0; i < ar.length && r >= ar[i]; i++);
+                            
+
+                            if (!visited[i]) {
+                                break;
+                            }
+                        }
+                        
+                        return i;
+                    }
+
+
+                    /*--------------------implementing runs----------------------*/
+
+                    //keep track of current best path
+                    let bestPath = null;
+
+                    function startRun() {
+
+                        //send multiple waves with delay to make visible in animation
+                        for (let waveCount = 0; waveCount < wavesAmount; waveCount++) {
+                            setTimeout(startIndivRun, animationSpeed);
+                        }
+                    }
+
+                    function startIndivRun() {
+                        //clean 
+                        landscape.selectAll("line")
+                            .attr("stroke", "#EEEEEE")
+                            .attr("stroke-width", 1)
+                            .attr("opacity", 0.1);
+
+                        landscape.selectAll("circle")
+                            .attr("fill", "red")
+
+
+
+
+                        //object to store the solutions for one wave
+                        let waveSolutions = [];
+
+                        //build multiple possible solutions
+                        for (let antCount = 0; antCount < antsPerWave; antCount++) {
+
+                            //build boolean Array to keep track of visited cities
+                            const visited = Array(nodes.length).fill(false);
+
+                            //Object to store the solution
+                            const solution = [];
+
+                            //randomly select first city
+                            const startCity = parseInt(Math.random() * nodes.length);
+                            visited[startCity] = true;
+
+
+                            let startCityId = startCity + 1;
+                            landscape.select("#city" + startCityId)
+                                .attr("fill", "yellow");
+
+                            let currentCity = startCity;
+                            let currentCityId = startCity + 1;
+
+                            solution.push({
+                                cityId: currentCityId,
+                                localDistance: 0,
+                                edgeID: "start"
+                            })
+
+                            //visit every other city
+                            while (visited.includes(false)) {
+                                
+
+                                let nextCity = selectCity(visited, currentCity);
+                                
+
+                                //mark selected city and respective edge
+                                let nextCityId = nextCity + 1;
+                                landscape.select("#city" + nextCityId)
+                                    .attr("fill", "yellow");
+
+                                landscape.select("#edge" + currentCityId + "-" + nextCityId)
+                                    .attr("stroke", "green")
+                                    .attr("opacity", 0.6)
+                                    .attr("stroke-width", 1);
+
+                                //mark new city as visited
+                                visited[nextCity] = true;
+
+
+                                //add selected city to solution
+                                solution.push({
+                                    cityId: nextCityId,
+                                    localDistance: pathsClean[currentCity][nextCity],
+                                    edgeID: "edge" + currentCityId + "-" + nextCityId
+                                });
+
+                                //online pheromone update
+                                currentPhero = edges[currentCity * nodes.length + nextCity].pheromone;
+                                edges[currentCity * nodes.length + nextCity].pheromone = (1 - decayCoeff) * currentPhero;
+
+                                //update current City
+                                currentCity = nextCity;
+                                currentCityId = nextCityId;
+
+
+
+
+                            }
+
+                            //add edge back to start city
+                            landscape.select("#edge" + currentCityId + "-" + startCityId)
+                                .attr("stroke", "green")
+                                .attr("stroke-width", 3)
+                                .attr("opacity", 0.02);
+
+                            solution.push({
+                                cityId: startCityId,
+                                localDistance: pathsClean[currentCity][startCityId - 1],
+                                edgeID: "edge" + currentCityId + "-" + startCityId
+                            });
+
+                            //add to current solutions and compute individual distance for each path
+                            waveSolutions.push({
+                                path: solution,
+                                distance: computeTotalDistance(solution)
+                            });
+
+                        }
+
+                        
+
+
+                        //offline pheromone update on best path in this iteration
+                        let bestLocalPath
+                        if (bestLocalPath == null) {
+                            bestLocalPath = waveSolutions[0];
+                        }
+
+                        waveSolutions.forEach(solution => {
+                            if (solution.distance < bestLocalPath.distance) {
+                                bestLocalPath = solution;
+                            }
+                        })
+
+
+                        let referencePath = bestLocalPath.path;
+                        for (let i = 0; i < referencePath.length - 1; i++) {
+
+                            let first = referencePath[i].cityId - 1;
+                            let second = referencePath[i + 1].cityId - 1;
+
+                            let edgeIndex = first * nodes.length + second;
+                            let currentPhero = edges[edgeIndex].pheromone;
+
+                            let newPhero = (1 - decayCoeff) * currentPhero + decayCoeff * 1 / bestLocalPath.distance;
+                            
+                            edges[edgeIndex].pheromone = newPhero;
+
+                        }
+                        
+
+                        //show pheromone updates
+                        bestLocalPath.path.forEach(city => {
+                            if (city.edgeID !== "start") {
+                                landscape.select("#" + city.edgeID)
+                                    .attr("stroke", "hotpink")
+                                    .attr("opacity", 1)
+                                    .attr("stroke-width", 5);
+                            }
+                        })
+
+
+
+                        //update best global solution if we found a better one
+                        if (bestPath == null) {
+                            bestPath = bestLocalPath;
+                        }
+
+                        if (bestLocalPath.distance < bestPath.distance) {
+                            bestPath = bestLocalPath;
+                        }
+
+
+
+                        
+
+                        //show current best path
+                        bestPath.path.forEach(city => {
+                            if (city.edgeID !== "start") {
+                                landscape.select("#" + city.edgeID)
+                                    .attr("stroke", "orange")
+                                    .attr("opacity", 1)
+                                    .attr("stroke-width", 7);
+                            }
+                        })
+                        //show info about best
+                        document.querySelector("#info").innerHTML = "Length of current best path: " + bestPath.distance;
+
+
+
+
+                    }
+
+
+                });
+        });
+</script>
+
+</html>

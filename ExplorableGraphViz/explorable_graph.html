@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Explorable Graph Visualization</title>
+<style>
+    body {
+        margin: 50px;
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+        background-color: #eee;
+    }
+
+    h2 {
+        clear: both;
+    }
+
+    .pre {
+        font-weight: bold;
+    }
+
+    svg {
+        float: left;
+        border: 1px solid black;
+        margin-bottom: 20px;
+        background-color: #E6E6E6;
+    }
+
+    a {
+        font-weight: bold;
+        font-size: 17pt;
+    }
+
+    .details {
+        float: left;
+        width: 300px;
+
+        overflow: auto;
+        border: 1px solid black;
+        font-size: 12pt;
+        margin-left: 5px;
+        padding: 10px;
+        background-color: #E6E6E6;
+        text-align: center;
+    }
+
+    #selection_details {
+        height: 505px;
+
+    }
+
+    #cluster_details {
+        height: 505px;
+
+    }
+
+    #title {
+        font-weight: bold;
+        font-size: 15pt;
+        text-align: left;
+    }
+
+    #description {
+        text-align: left;
+    }
+
+
+
+    .links {
+        opacity: 0.6;
+    }
+
+    .markedNode {
+        fill: purple;
+    }
+
+    button {
+        font-size: 15pt;
+        background-color: #B6DEC5;
+    }
+
+    #keywordList {
+        text-align: left;
+    }
+</style>
+
+<body>
+    <h1>Explorable Graph Visualization of a media collection based on common keywords</h1>
+    <script src="https://d3js.org/d3.v5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"
+        integrity="sha512-wNH6xsp2n8CfB91nrBtfc4sfLwYPBMjSWVUwQOp60AYYXH6i8yCwuKFZ4rgK2i6pQek/b+bSyR7b01/922IBzQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <svg width="1050" height="1050"></svg>
+    <div id="selection_details" class="details">
+        <p>Each node represents a media item. Click on a node to get details about media items</p>
+        <div id="title"></div>
+
+        <div id="image"></div>
+        <div id="description"></div>
+        <div id="additionalInfo"></div>
+
+    </div>
+
+    <div id="cluster_details" class="details">
+        <button id="hullButton">Click to display cluster info</button>
+        <br><br>
+        <div id="reset">
+            <button id="hullButtonReset" disabled>Remove clusters</button>
+            <p>You can hover over clusters to display the keywords these items are strongly connected by.</p>
+            <p id="keyword_field"></p>
+
+        </div>
+
+    </div>
+
+    <script type="module" src="explorable_graph.js"></script>
+
+
+    <h2>References</h2>
+
+    <ul>
+        <li><a href="https://bl.ocks.org/mbostock/4062045">Force-Directed Graph</a></li>
+        <li><a href="https://github.com/d3/d3-delaunay">Computation of Convex Hulls</a></li>
+        <li><a href="https://d3-legend.susielu.com/#color-linear-custom">Library for legend creation</li>
+
+    </ul>
+</body>
